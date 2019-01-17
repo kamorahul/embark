@@ -263,6 +263,10 @@ class Test {
     return instance;
   }
 
+  track(instance) {
+    this.events.emit("tests:manualDeploy", instance);
+  }
+
   async _deploy(config, callback) {
     const self = this;
     async.waterfall([
