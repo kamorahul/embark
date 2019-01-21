@@ -10,6 +10,7 @@ import { InstrumentWalker } from "./instrumentWalker";
 import { coverageContractsPath } from "./path";
 import { BranchType, Coverage } from "./types";
 
+const File = require("../../core/file");
 const fs = require("../../core/fs");
 
 const STATEMENT_EVENT = "__StatementCoverage";
@@ -52,7 +53,11 @@ export class ContractEnhanced {
   }
 
   public async remapImports() {
-    await new ImportResolver(this).process();
+    return new Promise((resolve) => {
+      new File({filename: this.coverageFilepath, type: File.types.dapp_file, path: this.coverageFilepath}).content((contractContent: string) => {
+        resolve(contractContent);
+      });
+    });
   }
 
   public copyDependencies() {

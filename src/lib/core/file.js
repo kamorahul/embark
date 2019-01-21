@@ -13,7 +13,6 @@ class File {
     this.basedir = options.basedir;
     this.resolver = options.resolver;
     this.pluginPath = options.pluginPath ? options.pluginPath : '';
-    this.downloadedImports = false;
     this.importRemappings = []; // mapping downloaded imports to local file
     this.storageConfig = options.storageConfig;
     this.providerUrl = null;
@@ -70,6 +69,24 @@ class File {
       matches.push(m[1]);
     }
     async.each(matches, (match, next) => {
+      const origMatch = match;
+      // handle the case where a http-imported contract contains other local imports that
+      // also need to be downloaded
+      if(isHttpContract && typeof isHttpContract === "string" && match.startsWith(".")) {
+        let urlChunks = isHttpContract.split('/');
+        let levels = match.split('../');
+
+        // remove relative path parts from end of url
+        urlChunks = urlChunks.slice(0, urlChunks.length - levels.length);
+
+        // remove relative path parts from start of match
+        levels.splice(0, levels.length - 1);
+
+        // add on our match so we can join later
+        urlChunks = urlChunks.concat(levels.join().replace('./', ''));
+
+        match = urlChunks.join('/');
+      }
       const httpFileObj = utils.getExternalContractUrl(match, self.providerUrl);
       const fileObj = {
         fileRelativePath: path.join(path.dirname(self.filename), match),
@@ -79,7 +96,7 @@ class File {
       self.addRemappings(match, httpFileObj, level, (err) => {
         if (err) return next(err);
         if (httpFileObj) {
-          newContent = newContent.replace(match, httpFileObj.filePath);
+          newContent = newContent.replace(origMatch, httpFileObj.filePath);
 
           fileObj.fileRelativePath = httpFileObj.filePath;
           fileObj.url = httpFileObj.url;
@@ -105,16 +122,11 @@ class File {
     this._parseFileForImport(content, isHttpContract, 0, (err, newContent, filesToDownload) => {
       if (err) return callback(err);
 
-      if (self.downloadedImports) {
-        // We already parsed this file
-        return callback(null, newContent);
-      }
       async.each(filesToDownload, ((fileObj, eachCb) => {
         self.downloadFile(fileObj.fileRelativePath, fileObj.url, (_content) => {
           eachCb();
         });
       }), (err) => {
-        self.downloadedImports = true;
         callback(err, newContent);
       });
     });
@@ -122,8 +134,10 @@ class File {
 
   downloadFile(filename, url, callback) {
     const self = this;
+    const alreadyExists = fs.existsSync(filename);
     async.waterfall([
       function makeTheDir(next) {
+        if(alreadyExists) return next();
         fs.mkdirp(path.dirname(filename), (err) => {
           if (err) {
             return next(err);
@@ -132,6 +146,7 @@ class File {
         });
       },
       function downloadTheFile(next) {
+        if(alreadyExists) return next();
         let alreadyCalledBack = false;
         function doCallback(err) {
           if (alreadyCalledBack) {
@@ -156,7 +171,7 @@ class File {
         fs.readFile(filename, next);
       },
       function parseForImports(content, next) {
-        self.parseFileForImport(content.toString(), true, (err) => {
+        self.parseFileForImport(content.toString(), url, (err) => {
           next(err, content);
         });
       }

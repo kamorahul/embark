@@ -197,8 +197,7 @@ describe('embark.Config', function () {
           "basedir": "",
           "resolver": undefined,
           "storageConfig": undefined,
-          "providerUrl": undefined,
-          "downloadedImports": false
+          "providerUrl": undefined
         },
         {
           "filename": ".embark/contracts/status-im/contracts/master/contracts/identity/ERC725.sol",
@@ -209,8 +208,7 @@ describe('embark.Config', function () {
           "basedir": "",
           "resolver": undefined,
           "storageConfig": undefined,
-          "providerUrl": undefined,
-          "downloadedImports": false
+          "providerUrl": undefined
         },
         {
           "filename": ".embark/contracts/bzz:/1ffe993abc835f480f688d07ad75ad1dbdbd1ddb368a08b7ed4d3e400771dd63",
@@ -221,8 +219,7 @@ describe('embark.Config', function () {
           "basedir": "",
           "resolver": undefined,
           "storageConfig": undefined,
-          "providerUrl": undefined,
-          "downloadedImports": false
+          "providerUrl": undefined
         }
       ];
       config.loadExternalContractsFiles();
