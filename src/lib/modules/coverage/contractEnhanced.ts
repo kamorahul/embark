@@ -3,7 +3,6 @@ import parser, { LineColumn, Location } from "solidity-parser-antlr";
 import { EventLog } from "web3/types";
 
 import { decrypt } from "./eventId";
-import { ImportResolver } from "./importResolver";
 import { Injector } from "./injector";
 import { Instrumenter } from "./instrumenter";
 import { InstrumentWalker } from "./instrumentWalker";
