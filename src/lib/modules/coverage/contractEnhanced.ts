@@ -55,6 +55,7 @@ export class ContractEnhanced {
   public async remapImports() {
     return new Promise((resolve) => {
       new File({filename: this.coverageFilepath, type: File.types.dapp_file, path: this.coverageFilepath}).content((contractContent: string) => {
+        this.source = contractContent;
         resolve(contractContent);
       });
     });

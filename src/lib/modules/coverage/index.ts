@@ -49,8 +49,8 @@ export default class Coverage {
     const promises = this.contracts.map(async (contract) => {
       contract.copyDependencies();
       contract.instrument();
-      contract.save();
       await contract.remapImports();
+      contract.save();
     });
     await Promise.all(promises);
     new Suppressor().process();
